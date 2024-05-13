@@ -25,12 +25,6 @@ class TestOrderFeedPage:
         user_information = format_response['user']
         TestOrderFeedPage.email = user_information['email']
 
-        payload = {"ingredients": ["61c0c5a71d1f82001bdaaa6d", "61c0c5a71d1f82001bdaaa72",
-                                   "61c0c5a71d1f82001bdaaa70"]}
-        requests.post(f'{Links.URL}/api/orders',
-                      headers={"Authorization": TestOrderFeedPage.accessToken},
-                      data=payload)
-
     @allure.title('Проверка того, что если кликнуть на заказ, откроется всплывающее окно с деталями')
     @allure.description('Находим на странице окно с деталями заказа и текст "Выполнен"')
     def test_popup_order_details(self, driver):
@@ -44,7 +38,8 @@ class TestOrderFeedPage:
 
     @allure.title('Проверка того, что заказы пользователя из раздела «История заказов» отображаются на странице '
                   '«Лента заказов»')
-    @allure.description('Находим на странице окно с деталями заказа и текст "Выполнен"')
+    @allure.description('Получаем номер последнего персонального заказа и сверяем его с номером последнего заказа на '
+                        'странице «Лента заказов»')
     def test_users_orders(self, driver):
         order_feed_page = OrderFeedPage(driver)
         driver.get(Links.URL)
@@ -53,15 +48,35 @@ class TestOrderFeedPage:
                                                   PersonalAccountLocators.PASSWORD_FIELD,
                                                   TestOrderFeedPage.password,
                                                   PersonalAccountLocators.GO_BUTTON)
+        order_feed_page.create_order(TestOrderFeedPage.accessToken)
         number = order_feed_page.get_order_number(PersonalAccountLocators.PERSONAL_ACCOUNT_BUTTON,
-                                         PersonalAccountLocators.ORDER_HISTORY_CHAPTER,
-                                         OrderFeedLocators.LAST_PERSONAL_ORDER,
-                                         OrderFeedLocators.PERSONAL_ORDER_NUMBER,
-                                         OrderFeedLocators.CLOSE_ORDER_DETAILS)
+                                                  PersonalAccountLocators.ORDER_HISTORY_CHAPTER,
+                                                  OrderFeedLocators.LAST_PERSONAL_ORDER,
+                                                  OrderFeedLocators.PERSONAL_ORDER_NUMBER,
+                                                  OrderFeedLocators.CLOSE_ORDER_DETAILS)
         order_feed_page.click_on_element(OrderFeedLocators.ORDER_FEED_LINK)
         order_feed_page.find_element_with_wait(OrderFeedLocators.LAST_ORDER_NUMBER)
 
         assert order_feed_page.get_text_from_element(OrderFeedLocators.LAST_ORDER_NUMBER) == number
+
+    @allure.title('Проверка того, что при создании нового заказа счётчик Выполнено за всё время увеличивается')
+    @allure.description('Сохраняем номер последнего заказа на странице «Лента заказов», делаем новый заказ,'
+                        'проверяем, что номер последнего заказа на странице «Лента заказов» увелицился на 1')
+    def test_orders_counter(self, driver):
+        order_feed_page = OrderFeedPage(driver)
+        driver.get(Links.URL)
+        number_1 = order_feed_page.get_last_order_number(OrderFeedLocators.ORDER_FEED_LINK,
+                                                    OrderFeedLocators.LAST_ORDER_NUMBER)
+        order_feed_page.login_to_personal_account(PersonalAccountLocators.PERSONAL_ACCOUNT_BUTTON,
+                                                  PersonalAccountLocators.EMAIL_FIELD, TestOrderFeedPage.email,
+                                                  PersonalAccountLocators.PASSWORD_FIELD,
+                                                  TestOrderFeedPage.password,
+                                                  PersonalAccountLocators.GO_BUTTON)
+        order_feed_page.create_order(TestOrderFeedPage.accessToken)
+        number_2 = order_feed_page.get_last_order_number(OrderFeedLocators.ORDER_FEED_LINK,
+                                                    OrderFeedLocators.LAST_ORDER_NUMBER)
+
+        assert int(number_2) - int(number_1) == 1
 
     @classmethod
     def teardown_class(cls):
