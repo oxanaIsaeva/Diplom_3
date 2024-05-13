@@ -16,3 +16,5 @@ class OrderFeedLocators:
     # Номер последнего заказа из "Ленты Заказов"
     CLOSE_ORDER_DETAILS = By.XPATH, "//*[@id='root']/div/section[2]/div[1]/button"
     # Кпопка закрытия деталей заказа
+    COUNT_OF_ORDERS_TODAY = By.XPATH, "//*[@id='root']/div/main/div/div/div/div[3]/p[2]"
+    # Количество выполненных за сегодня заказов

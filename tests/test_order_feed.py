@@ -61,12 +61,12 @@ class TestOrderFeedPage:
 
     @allure.title('Проверка того, что при создании нового заказа счётчик Выполнено за всё время увеличивается')
     @allure.description('Сохраняем номер последнего заказа на странице «Лента заказов», делаем новый заказ,'
-                        'проверяем, что номер последнего заказа на странице «Лента заказов» увелицился на 1')
+                        'проверяем, что номер последнего заказа на странице «Лента заказов» увеличился на 1')
     def test_orders_counter(self, driver):
         order_feed_page = OrderFeedPage(driver)
         driver.get(Links.URL)
         number_1 = order_feed_page.get_last_order_number(OrderFeedLocators.ORDER_FEED_LINK,
-                                                    OrderFeedLocators.LAST_ORDER_NUMBER)
+                                                         OrderFeedLocators.LAST_ORDER_NUMBER)
         order_feed_page.login_to_personal_account(PersonalAccountLocators.PERSONAL_ACCOUNT_BUTTON,
                                                   PersonalAccountLocators.EMAIL_FIELD, TestOrderFeedPage.email,
                                                   PersonalAccountLocators.PASSWORD_FIELD,
@@ -74,7 +74,27 @@ class TestOrderFeedPage:
                                                   PersonalAccountLocators.GO_BUTTON)
         order_feed_page.create_order(TestOrderFeedPage.accessToken)
         number_2 = order_feed_page.get_last_order_number(OrderFeedLocators.ORDER_FEED_LINK,
-                                                    OrderFeedLocators.LAST_ORDER_NUMBER)
+                                                         OrderFeedLocators.LAST_ORDER_NUMBER)
+
+        assert int(number_2) - int(number_1) == 1
+
+    @allure.title('Проверка того, что при создании нового заказа счётчик Выполнено за сегодня увеличивается')
+    @allure.description('Сохраняем номер выполненных за сегодня заказов на странице «Лента заказов», '
+                        'делаем новый заказ, проверяем, что номер номер выполненных за сегодня заказов на странице '
+                        '«Лента заказов» увеличился на 1')
+    def test_orders_counter_today(self, driver):
+        order_feed_page = OrderFeedPage(driver)
+        driver.get(Links.URL)
+        number_1 = order_feed_page.get_last_order_number(OrderFeedLocators.ORDER_FEED_LINK,
+                                                         OrderFeedLocators.COUNT_OF_ORDERS_TODAY)
+        order_feed_page.login_to_personal_account(PersonalAccountLocators.PERSONAL_ACCOUNT_BUTTON,
+                                                  PersonalAccountLocators.EMAIL_FIELD, TestOrderFeedPage.email,
+                                                  PersonalAccountLocators.PASSWORD_FIELD,
+                                                  TestOrderFeedPage.password,
+                                                  PersonalAccountLocators.GO_BUTTON)
+        order_feed_page.create_order(TestOrderFeedPage.accessToken)
+        number_2 = order_feed_page.get_last_order_number(OrderFeedLocators.ORDER_FEED_LINK,
+                                                         OrderFeedLocators.COUNT_OF_ORDERS_TODAY)
 
         assert int(number_2) - int(number_1) == 1
 
