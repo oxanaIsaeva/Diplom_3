@@ -22,7 +22,7 @@ class TestRestorePasswordPage:
         TestRestorePasswordPage.email = user_information['email']
 
     @allure.title('Проверка, что при нажатии на кнопку «Восстановить пароль» происходит переход на страницу '
-                  'восстановления пароля ')
+                  'восстановления пароля')
     @allure.description('Сверяем текущий url с ожидаемым (data > Links.FORGOT_PASSWORD_URL)')
     def test_jump_to_restore_password_page(self, driver):
         restore_pass_page = RestorePasswordPage(driver)

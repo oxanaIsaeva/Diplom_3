@@ -1,4 +1,3 @@
-import time
 
 import allure
 import requests
@@ -97,6 +96,25 @@ class TestOrderFeedPage:
                                                          OrderFeedLocators.COUNT_OF_ORDERS_TODAY)
 
         assert int(number_2) - int(number_1) == 1
+
+    @allure.title('Проверка того, что после оформления заказа его номер появляется в разделе В работе')
+    @allure.description('Получаем номер последнего персонального заказа и ищем его среди номеров заказов в работе на '
+                        'странице «Лента заказов»')
+    def test_orders_in_progress(self, driver):
+        order_feed_page = OrderFeedPage(driver)
+        driver.get(Links.URL)
+        order_feed_page.login_to_personal_account(PersonalAccountLocators.PERSONAL_ACCOUNT_BUTTON,
+                                                  PersonalAccountLocators.EMAIL_FIELD, TestOrderFeedPage.email,
+                                                  PersonalAccountLocators.PASSWORD_FIELD,
+                                                  TestOrderFeedPage.password,
+                                                  PersonalAccountLocators.GO_BUTTON)
+        order_feed_page.click_on_element(OrderFeedLocators.ORDER_FEED_LINK)
+        last_number = order_feed_page.get_last_order_number(OrderFeedLocators.ORDER_FEED_LINK,
+                                              OrderFeedLocators.LAST_ORDER_NUMBER)
+        order_feed_page.create_order(TestOrderFeedPage.accessToken)
+        orders_in_progress = order_feed_page.get_text_from_element(OrderFeedLocators.ORDERS_IN_PROGRESS)
+
+        assert orders_in_progress == int(last_number)+1
 
     @classmethod
     def teardown_class(cls):
