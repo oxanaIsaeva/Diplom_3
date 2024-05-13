@@ -18,5 +18,5 @@ class OrderFeedLocators:
     # Кпопка закрытия деталей заказа
     COUNT_OF_ORDERS_TODAY = By.XPATH, "//*[@id='root']/div/main/div/div/div/div[3]/p[2]"
     # Количество выполненных за сегодня заказов
-    ORDERS_IN_PROGRESS = By.XPATH, "//*[@id='root']/div/main/div/div/div/div[1]/ul[2]/li"
+    ORDERS_IN_PROGRESS = By.XPATH, ".//li[contains(@class, 'text_type_digits-default')]"
     # Заказы в работе

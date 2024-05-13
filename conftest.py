@@ -5,7 +5,7 @@ from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 
 
-@pytest.fixture(params=['chrome'])
+@pytest.fixture(params=['firefox'])
 def driver(request):
     if request.param == 'firefox':
         firefox_options = FirefoxOptions()

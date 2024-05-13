@@ -2,6 +2,7 @@ import allure
 import requests
 
 from data import Links
+from locators.order_feed_locators import OrderFeedLocators
 from pages.personal_account_page import PersonalAccountPage
 
 
@@ -24,9 +25,23 @@ class OrderFeedPage(PersonalAccountPage):
     def create_order(self, access_token):
         payload = {"ingredients": ["61c0c5a71d1f82001bdaaa6d", "61c0c5a71d1f82001bdaaa72",
                                    "61c0c5a71d1f82001bdaaa70"]}
-        requests.post(f'{Links.URL}/api/orders',
-                      headers={"Authorization": access_token},
-                      data=payload)
+        response = requests.post(f'{Links.URL}/api/orders',
+                                 headers={"Authorization": access_token},
+                                 data=payload)
+        format_response = response.json()
+        order = format_response["order"]
+        order_number = order["number"]
+
+        return order_number
+
+    @allure.step('Получение заказов "В работе"')
+    def get_orders_in_progress(self, locator_in_progress):
+        elements = self.get_text_from_elements(locator_in_progress)
+        orders_list = []
+        for element in elements:
+            order_number = element.text[1:]
+            orders_list.append(order_number)
+        return orders_list
 
     @allure.step('Получение последнего номера заказа')
     def get_last_order_number(self, locator_order_link, locator_last_order_number):

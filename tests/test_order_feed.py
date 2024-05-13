@@ -108,13 +108,12 @@ class TestOrderFeedPage:
                                                   PersonalAccountLocators.PASSWORD_FIELD,
                                                   TestOrderFeedPage.password,
                                                   PersonalAccountLocators.GO_BUTTON)
+        order_feed_page.find_element_with_wait(OrderFeedLocators.ORDER_FEED_LINK)
         order_feed_page.click_on_element(OrderFeedLocators.ORDER_FEED_LINK)
-        last_number = order_feed_page.get_last_order_number(OrderFeedLocators.ORDER_FEED_LINK,
-                                              OrderFeedLocators.LAST_ORDER_NUMBER)
-        order_feed_page.create_order(TestOrderFeedPage.accessToken)
-        orders_in_progress = order_feed_page.get_text_from_element(OrderFeedLocators.ORDERS_IN_PROGRESS)
+        order = order_feed_page.create_order(TestOrderFeedPage.accessToken)
+        order_list = order_feed_page.get_orders_in_progress(OrderFeedLocators.ORDERS_IN_PROGRESS)
 
-        assert orders_in_progress == int(last_number)+1
+        assert str(order) in order_list
 
     @classmethod
     def teardown_class(cls):
