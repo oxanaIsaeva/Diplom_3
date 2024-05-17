@@ -1,34 +1,20 @@
 
 import allure
-import requests
 
-from data import Links, Data
+from data import Links
 from locators.personal_account_page_locators import PersonalAccountLocators
 from pages.order_feed_page import OrderFeedPage
 from locators.order_feed_locators import OrderFeedLocators
-from conftest import driver
+from conftest import driver, create_new_user, login, create_order
 
 
 class TestOrderFeedPage:
-    accessToken = ""
-    email = ""
-    password = "Test12345"
-    ingredients = []
-
-    @classmethod
-    def setup_class(cls):
-        payload = Data.CREATE_USER
-        response = requests.post(f'{Links.URL}/api/auth/register', data=payload)
-        format_response = response.json()
-        TestOrderFeedPage.accessToken = format_response["accessToken"]
-        user_information = format_response['user']
-        TestOrderFeedPage.email = user_information['email']
 
     @allure.title('Проверка того, что если кликнуть на заказ, откроется всплывающее окно с деталями')
     @allure.description('Находим на странице окно с деталями заказа и текст "Выполнен"')
     def test_popup_order_details(self, driver):
         order_feed_page = OrderFeedPage(driver)
-        driver.get(Links.FEED_URL)
+        driver.get(Links.URL+Links.FEED_URL)
         order_feed_page.click_on_element(OrderFeedLocators.LAST_ORDER)
         order_feed_page.find_element_with_wait(OrderFeedLocators.POPUP_ORDER_DETAILS)
 
@@ -39,15 +25,8 @@ class TestOrderFeedPage:
                   '«Лента заказов»')
     @allure.description('Получаем номер последнего персонального заказа и сверяем его с номером последнего заказа на '
                         'странице «Лента заказов»')
-    def test_users_orders(self, driver):
+    def test_users_orders(self, driver, create_new_user, login, create_order):
         order_feed_page = OrderFeedPage(driver)
-        driver.get(Links.URL)
-        order_feed_page.login_to_personal_account(PersonalAccountLocators.PERSONAL_ACCOUNT_BUTTON,
-                                                  PersonalAccountLocators.EMAIL_FIELD, TestOrderFeedPage.email,
-                                                  PersonalAccountLocators.PASSWORD_FIELD,
-                                                  TestOrderFeedPage.password,
-                                                  PersonalAccountLocators.GO_BUTTON)
-        order_feed_page.create_order(TestOrderFeedPage.accessToken)
         number = order_feed_page.get_order_number(PersonalAccountLocators.PERSONAL_ACCOUNT_BUTTON,
                                                   PersonalAccountLocators.ORDER_HISTORY_CHAPTER,
                                                   OrderFeedLocators.LAST_PERSONAL_ORDER,
@@ -61,17 +40,13 @@ class TestOrderFeedPage:
     @allure.title('Проверка того, что при создании нового заказа счётчик Выполнено за всё время увеличивается')
     @allure.description('Сохраняем номер последнего заказа на странице «Лента заказов», делаем новый заказ,'
                         'проверяем, что номер последнего заказа на странице «Лента заказов» увеличился на 1')
-    def test_orders_counter(self, driver):
+    def test_orders_counter(self, driver, create_new_user, login):
         order_feed_page = OrderFeedPage(driver)
-        driver.get(Links.URL)
+        order_feed_page.click_on_element(OrderFeedLocators.ORDER_FEED_LINK)
         number_1 = order_feed_page.get_last_order_number(OrderFeedLocators.ORDER_FEED_LINK,
                                                          OrderFeedLocators.LAST_ORDER_NUMBER)
-        order_feed_page.login_to_personal_account(PersonalAccountLocators.PERSONAL_ACCOUNT_BUTTON,
-                                                  PersonalAccountLocators.EMAIL_FIELD, TestOrderFeedPage.email,
-                                                  PersonalAccountLocators.PASSWORD_FIELD,
-                                                  TestOrderFeedPage.password,
-                                                  PersonalAccountLocators.GO_BUTTON)
-        order_feed_page.create_order(TestOrderFeedPage.accessToken)
+        token = create_new_user[1].json()["accessToken"]
+        order_feed_page.create_order(token)
         number_2 = order_feed_page.get_last_order_number(OrderFeedLocators.ORDER_FEED_LINK,
                                                          OrderFeedLocators.LAST_ORDER_NUMBER)
 
@@ -81,17 +56,13 @@ class TestOrderFeedPage:
     @allure.description('Сохраняем номер выполненных за сегодня заказов на странице «Лента заказов», '
                         'делаем новый заказ, проверяем, что номер номер выполненных за сегодня заказов на странице '
                         '«Лента заказов» увеличился на 1')
-    def test_orders_counter_today(self, driver):
+    def test_orders_counter_today(self, driver, create_new_user, login):
         order_feed_page = OrderFeedPage(driver)
-        driver.get(Links.URL)
+        order_feed_page.click_on_element(OrderFeedLocators.ORDER_FEED_LINK)
         number_1 = order_feed_page.get_last_order_number(OrderFeedLocators.ORDER_FEED_LINK,
                                                          OrderFeedLocators.COUNT_OF_ORDERS_TODAY)
-        order_feed_page.login_to_personal_account(PersonalAccountLocators.PERSONAL_ACCOUNT_BUTTON,
-                                                  PersonalAccountLocators.EMAIL_FIELD, TestOrderFeedPage.email,
-                                                  PersonalAccountLocators.PASSWORD_FIELD,
-                                                  TestOrderFeedPage.password,
-                                                  PersonalAccountLocators.GO_BUTTON)
-        order_feed_page.create_order(TestOrderFeedPage.accessToken)
+        token = create_new_user[1].json()["accessToken"]
+        order_feed_page.create_order(token)
         number_2 = order_feed_page.get_last_order_number(OrderFeedLocators.ORDER_FEED_LINK,
                                                          OrderFeedLocators.COUNT_OF_ORDERS_TODAY)
 
@@ -100,22 +71,12 @@ class TestOrderFeedPage:
     @allure.title('Проверка того, что после оформления заказа его номер появляется в разделе В работе')
     @allure.description('Получаем номер последнего персонального заказа и ищем его среди номеров заказов в работе на '
                         'странице «Лента заказов»')
-    def test_orders_in_progress(self, driver):
+    def test_orders_in_progress(self, driver, create_new_user, login):
         order_feed_page = OrderFeedPage(driver)
-        driver.get(Links.URL)
-        order_feed_page.login_to_personal_account(PersonalAccountLocators.PERSONAL_ACCOUNT_BUTTON,
-                                                  PersonalAccountLocators.EMAIL_FIELD, TestOrderFeedPage.email,
-                                                  PersonalAccountLocators.PASSWORD_FIELD,
-                                                  TestOrderFeedPage.password,
-                                                  PersonalAccountLocators.GO_BUTTON)
         order_feed_page.find_element_with_wait(OrderFeedLocators.ORDER_FEED_LINK)
         order_feed_page.click_on_element(OrderFeedLocators.ORDER_FEED_LINK)
-        order = order_feed_page.create_order(TestOrderFeedPage.accessToken)
+        token = create_new_user[1].json()["accessToken"]
+        order = order_feed_page.create_order(token)
         order_list = order_feed_page.get_orders_in_progress(OrderFeedLocators.ORDERS_IN_PROGRESS)
 
         assert str(order) in order_list
-
-    @classmethod
-    def teardown_class(cls):
-        requests.delete(f'{Links.URL}/api/auth/user',
-                        headers={"Authorization": TestOrderFeedPage.accessToken})
